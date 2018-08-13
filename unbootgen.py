@@ -25,6 +25,9 @@ import re
 import struct
 import sys
 
+def swap32(i):
+    return struct.pack(">I", struct.unpack("<I", i)[0])
+
 class InvalidHeaderError(Exception):
     pass
 
@@ -299,7 +302,10 @@ class c_partition_header(c_header):
 
     def dump(self, fdin, fdout):
         fdin.seek(self.get_data_offset())
-        fdout.write(fdin.read(self.get_partition_size()))
+        for i in range(self.get_partition_size()//4):
+            word = fdin.read(4)
+            swapped = swap32(word)
+            fdout.write(swapped)
 
 def show_header(boot_header, args):
     if args.offset:
